@@ -1,6 +1,7 @@
-
+import argparse
 import csv
 import json
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -18,14 +19,12 @@ def load_devices():
 
 
 def save_reports(results):
-    """Save network health results as JSON and CSV."""
+    """Save the latest results and append them to history."""
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
     json_file = REPORTS_DIR / "network_health.json"
     csv_file = REPORTS_DIR / "network_health.csv"
     history_file = REPORTS_DIR / "network_health_history.csv"
-    with json_file.open("w", encoding="utf-8") as file:
-        json.dump(results, file, indent=2, ensure_ascii=False)
 
     fieldnames = [
         "checked_at",
@@ -41,40 +40,39 @@ def save_reports(results):
         "max_rtt_ms",
     ]
 
+    with json_file.open("w", encoding="utf-8") as file:
+        json.dump(results, file, indent=2, ensure_ascii=False)
+
     with csv_file.open("w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(results)
-        history_exists = history_file.exists()
+
+    history_exists = history_file.exists()
 
     with history_file.open("a", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
-
         if not history_exists:
             writer.writeheader()
-
         writer.writerows(results)
-    print("\nReports saved:")
-    print(f"JSON: {json_file}")
-    print(f"CSV:  {csv_file}")
+
+    print(f"Reports saved: {json_file}, {csv_file}")
 
 
-def main():
-    devices = load_devices()
+def check_network(devices):
+    """Check all configured devices and save one monitoring cycle."""
     results = []
 
-    print(f"Devices configured: {len(devices)}")
-    print("=" * 100)
+    print(f"\nCheck time: {datetime.now(timezone.utc).isoformat()}")
+    print("-" * 80)
 
     for device in devices:
         ping_result = ping_device(device["host"])
-
         record = {
             "checked_at": datetime.now(timezone.utc).isoformat(),
             "name": device["name"],
             **ping_result,
         }
-
         results.append(record)
 
         print(
@@ -86,19 +84,49 @@ def main():
         )
 
     save_reports(results)
-    total_devices = len(results)
-    devices_up = sum(1 for device in results if device["reachable"])
-    devices_down = total_devices - devices_up
 
-    overall_status = "HEALTHY" if devices_down == 0 else "ISSUES DETECTED"
+    total = len(results)
+    up = sum(1 for device in results if device["reachable"])
+    down = total - up
+    overall = "HEALTHY" if down == 0 else "ISSUES DETECTED"
 
-    print("\n" + "=" * 40)
-    print("NETWORK HEALTH SUMMARY")
-    print("=" * 40)
-    print(f"Total devices: {total_devices}")
-    print(f"Devices UP: {devices_up}")
-    print(f"Devices DOWN: {devices_down}")
-    print(f"Overall status: {overall_status}")
+    print("-" * 40)
+    print(f"Total devices: {total}")
+    print(f"Devices UP: {up}")
+    print(f"Devices DOWN: {down}")
+    print(f"Overall status: {overall}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Network Health Checker")
+    parser.add_argument(
+        "--interval",
+        type=int,
+        default=0,
+        help="Seconds between checks; 0 runs once",
+    )
+    args = parser.parse_args()
+
+    if args.interval < 0:
+        parser.error("--interval must be 0 or a positive number")
+
+    devices = load_devices()
+    print(f"Devices configured: {len(devices)}")
+
+    try:
+        while True:
+            check_network(devices)
+
+            if args.interval == 0:
+                break
+
+            print(f"\nNext check in {args.interval} seconds. Press Ctrl+C to stop.")
+            time.sleep(args.interval)
+
+    except KeyboardInterrupt:
+        print("\nMonitoring stopped by user.")
+
 
 if __name__ == "__main__":
     main()
+
