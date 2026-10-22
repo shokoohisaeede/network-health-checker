@@ -1,5 +1,5 @@
 # Network Health Checker
-
+![Network Health Checker Tests](https://github.com/shokoohisaeede/network-health-checker/actions/workflows/tests.yml/badge.svg)
 A Python-based network monitoring tool designed to check device connectivity, measure network performance, and generate health reports.
 
 This project was developed as a practical networking project using Python and a GNS3 lab environment.
