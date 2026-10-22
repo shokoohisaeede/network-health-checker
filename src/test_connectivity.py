@@ -1,4 +1,4 @@
-
+import main
 import subprocess
 from unittest.mock import patch, Mock
 
@@ -70,3 +70,21 @@ def test_ping_device_os_error():
     assert result["status"] == "ERROR: ping command not found"
     assert result["received"] == 0
     assert result["packet_loss_percent"] == 100.0
+def test_status_change_alert(capsys):
+    """A transition from UP to DOWN should print an alert."""
+    main.previous_states.clear()
+
+    main.check_status_change("PC1", True)
+    main.check_status_change("PC1", False)
+
+    captured = capsys.readouterr()
+    assert "ALERT: PC1 is DOWN!" in captured.out
+def test_status_change_recovery(capsys):
+    """A transition from DOWN to UP should print a recovery message."""
+    main.previous_states.clear()
+
+    main.check_status_change("PC1", False)
+    main.check_status_change("PC1", True)
+
+    captured = capsys.readouterr()
+    assert "RECOVERY: PC1 is UP again." in captured.out

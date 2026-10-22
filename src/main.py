@@ -10,13 +10,25 @@ from connectivity import ping_device
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 DEVICES_FILE = PROJECT_DIR / "devices.json"
 REPORTS_DIR = PROJECT_DIR / "reports"
-
+previous_states = {}
 
 def load_devices():
     """Load the device inventory from JSON."""
     with DEVICES_FILE.open("r", encoding="utf-8") as file:
         return json.load(file)["devices"]
 
+def check_status_change(name, reachable):
+    """Print an alert when a device changes its availability."""
+    current_state = "UP" if reachable else "DOWN"
+    previous_state = previous_states.get(name)
+
+    if previous_state == "UP" and current_state == "DOWN":
+        print(f"\nALERT: {name} is DOWN!")
+
+    elif previous_state == "DOWN" and current_state == "UP":
+        print(f"\nRECOVERY: {name} is UP again.")
+
+    previous_states[name] = current_state
 
 def save_reports(results):
     """Save the latest results and append them to history."""
@@ -68,6 +80,10 @@ def check_network(devices):
 
     for device in devices:
         ping_result = ping_device(device["host"])
+        ping_result = ping_device(device["host"])
+        check_status_change(device["name"], ping_result["reachable"])
+
+        
         record = {
             "checked_at": datetime.now(timezone.utc).isoformat(),
             "name": device["name"],
