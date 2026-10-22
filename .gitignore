@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Virtual environment
+.venv/
+venv/
+
+# IDE and editor files
+.vscode/
+.idea/
+
+# Operating system
+.DS_Store
+# Generated network reports
+reports/*.csv
+reports/*.json
