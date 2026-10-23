@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from connectivity import ping_device
+from performance import check_latency
 
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 DEVICES_FILE = PROJECT_DIR / "devices.json"
@@ -82,7 +83,7 @@ def check_network(devices):
         ping_result = ping_device(device["host"])
         ping_result = ping_device(device["host"])
         check_status_change(device["name"], ping_result["reachable"])
-
+        check_latency(device["name"], ping_result["avg_rtt_ms"])
         
         record = {
             "checked_at": datetime.now(timezone.utc).isoformat(),
