@@ -16,3 +16,7 @@ venv/
 # Generated network reports
 reports/*.csv
 reports/*.json
+
+# Environment variables and secrets
+.env
+.env.*

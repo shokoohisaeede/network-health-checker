@@ -7,6 +7,7 @@ from pathlib import Path
 
 from connectivity import ping_device
 from performance import check_latency
+from metrics import update_metrics, start_metrics_server
 
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 DEVICES_FILE = PROJECT_DIR / "devices.json"
@@ -81,9 +82,9 @@ def check_network(devices):
 
     for device in devices:
         ping_result = ping_device(device["host"])
-        ping_result = ping_device(device["host"])
         check_status_change(device["name"], ping_result["reachable"])
         check_latency(device["name"], ping_result["avg_rtt_ms"])
+        update_metrics(device["name"], ping_result)
         
         record = {
             "checked_at": datetime.now(timezone.utc).isoformat(),
@@ -129,6 +130,7 @@ def main():
 
     devices = load_devices()
     print(f"Devices configured: {len(devices)}")
+    start_metrics_server(8000)
 
     try:
         while True:
