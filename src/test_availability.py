@@ -49,3 +49,10 @@ def test_empty_history(tmp_path):
     result = calculate_availability(history_file)
 
     assert result == {}
+def test_missing_history_file(tmp_path):
+    """A missing history file should return no device results."""
+    history_file = tmp_path / "missing_history.csv"
+
+    result = calculate_availability(history_file)
+
+    assert result == {}

@@ -11,7 +11,12 @@ def calculate_availability(history_file=HISTORY_FILE):
     """Calculate availability percentage for each device."""
     checks = defaultdict(lambda: {"total": 0, "up": 0})
 
-    with Path(history_file).open("r", newline="", encoding="utf-8") as file:
+    history_path = Path(history_file)
+
+    if not history_path.exists():
+          return {}
+
+    with history_path.open("r", newline="", encoding="utf-8") as file:
         reader = csv.DictReader(file)
 
         for row in reader:
