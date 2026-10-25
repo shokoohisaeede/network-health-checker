@@ -5,7 +5,9 @@
 A Python-based network monitoring project that checks device availability, measures network performance, and visualises monitoring metrics using Prometheus and Grafana.
 
 Developed and tested in a Linux environment with a GNS3 virtual network lab.
+## Grafana Dashboard
 
+![Network Health Checker Grafana Dashboard](docs/grafana-dashboard.png)
 ## Features
 
 - **Device Availability Monitoring:** Checks whether configured devices are reachable.
