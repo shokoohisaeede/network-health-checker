@@ -87,7 +87,7 @@ source .venv/bin/activate
 Install the Python dependencies:
 
 ```bash
-pip install prometheus-client pytest
+python -m pip install -r requirements.txt
 ```
 
 Configure the devices in `devices.json` using the IP addresses in your lab.
